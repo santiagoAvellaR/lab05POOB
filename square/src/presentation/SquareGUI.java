@@ -16,12 +16,18 @@ import java.util.*;
  * @version (a version number or a date)
  */
 public class SquareGUI extends JFrame{
+    // domain modelo
     private Square square;
     // Menu
-    private JMenuBar menuBar;
-    private JMenu opciones;
     private JMenuItem nuevo, abrir, guardar, cerrar;
-
+    // Principal
+    private JPanel mainPanel;
+    private JButton newGameButton;
+    private JTextField sizeTextField;
+    private JTextField holesTextField;
+    // Game window
+    private JPanel gamePanel;
+    JButton homeButton;
 
 
     /**
@@ -40,12 +46,33 @@ public class SquareGUI extends JFrame{
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         prepareMenuElements();
+        prepareMainWindowElements();
+        prepareGameElements();
+    }
+
+    private void prepareActions(){
+        SquareGUI gui = this;
+        addWindowListener(new WindowAdapter(){
+            @Override
+            public void windowClosing(WindowEvent event){
+                int option = JOptionPane.showConfirmDialog(gui, "¿Estás seguro de que quieres cerrar?", "Cofirmar cierre", JOptionPane.YES_NO_OPTION);
+                if(option == JOptionPane.YES_OPTION){
+                    gui.setVisible(false);
+                    System.exit(0);
+                }
+            }
+        });
+        prepareMenuActions();
+        prepareMainWindowActions();
+        prepareGameActions();
     }
 
     private void prepareMenuElements(){
         // Botones-Opciones Menu
+        JMenuBar menuBar;
+        JMenu opciones;
         menuBar = new JMenuBar();
-        opciones = new JMenu("Opciones");
+        opciones = new JMenu("Archivo");
         setJMenuBar(menuBar);
         nuevo = new JMenuItem("Nuevo");
         opciones.add(nuevo);
@@ -59,7 +86,6 @@ public class SquareGUI extends JFrame{
         cerrar = new JMenuItem("Cerrar");
         opciones.add(cerrar);
         menuBar.add(opciones);
-        prepareMenuActions();
     }
 
     private void prepareMenuActions(){
@@ -101,22 +127,101 @@ public class SquareGUI extends JFrame{
         });
     }
 
-    private void prepareActions(){
-        SquareGUI gui = this;
-        addWindowListener(new WindowAdapter(){
+    private void prepareMainWindowElements(){
+        mainPanel = new JPanel();
+        mainPanel.setLayout(new GridLayout(5, 1, 0, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        JLabel titleLabel = new JLabel("Square Game");
+        titleLabel.setFont(new Font("Tahoma", Font.BOLD, 40));
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        mainPanel.add(titleLabel);
+        // Board size
+        JPanel boardSizePanel = new JPanel(new BorderLayout());
+        boardSizePanel.setBackground(Color.LIGHT_GRAY);
+        boardSizePanel.add(Box.createRigidArea(new Dimension(10, 10)), BorderLayout.NORTH);
+        boardSizePanel.add(Box.createRigidArea(new Dimension(10, 10)), BorderLayout.WEST);
+        boardSizePanel.add(Box.createRigidArea(new Dimension(10, 10)), BorderLayout.EAST);
+        boardSizePanel.add(Box.createRigidArea(new Dimension(10, 10)), BorderLayout.SOUTH);
+        JLabel boardSizeLabel = new JLabel("Tamaño del tablero:");
+        sizeTextField = new JTextField(10);
+        JPanel boardSizeInputPanel = new JPanel();
+        boardSizeInputPanel.add(boardSizeLabel);
+        boardSizeInputPanel.add(sizeTextField);
+        boardSizePanel.add(boardSizeInputPanel, BorderLayout.CENTER);
+        mainPanel.add(boardSizePanel);
+        // Holes on Board
+        JPanel holesPanel = new JPanel(new BorderLayout());
+        holesPanel.setBackground(Color.LIGHT_GRAY);
+        holesPanel.add(Box.createRigidArea(new Dimension(10, 10)), BorderLayout.NORTH);
+        holesPanel.add(Box.createRigidArea(new Dimension(10, 10)), BorderLayout.WEST);
+        holesPanel.add(Box.createRigidArea(new Dimension(10, 10)), BorderLayout.EAST);
+        holesPanel.add(Box.createRigidArea(new Dimension(10, 10)), BorderLayout.SOUTH);
+        JLabel holesLabel = new JLabel("Número de huecos:");
+        holesTextField = new JTextField(10);
+        JPanel holesInputPanel = new JPanel();
+        holesInputPanel.add(holesLabel);
+        holesInputPanel.add(holesTextField);
+        holesPanel.add(holesInputPanel, BorderLayout.CENTER);
+        mainPanel.add(holesPanel);
+        // new game button
+        JPanel newGamePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        newGamePanel.setBackground(Color.LIGHT_GRAY);
+        newGamePanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        newGameButton = new JButton("Juego Nuevo");
+        newGameButton.setFont(new Font("Tahoma", Font.BOLD, 16));
+        newGameButton.setBackground(Color.DARK_GRAY);
+        newGameButton.setForeground(Color.WHITE);
+        newGamePanel.add(newGameButton);
+        mainPanel.add(newGamePanel);
+
+        add(mainPanel);
+    }
+
+    private void prepareMainWindowActions(){
+        newGameButton.addActionListener(new ActionListener() {
             @Override
-            public void windowClosing(WindowEvent event){
-                int option = JOptionPane.showConfirmDialog(gui, "¿Estás seguro de que quieres cerrar?", "Cofirmar cierre", JOptionPane.YES_NO_OPTION);
-                if(option == JOptionPane.YES_OPTION){
-                    gui.setVisible(false);
-                    System.exit(0);
-                }
+            public void actionPerformed(ActionEvent e) {
+                setContentPane(gamePanel);
+                revalidate();
+                repaint();
             }
         });
+    }
+
+    private void prepareGameElements(){
+        gamePanel = new JPanel();
+        gamePanel.setLayout(new BorderLayout());
+        JLabel gameLabel = new JLabel("¡Estás en el juego ahora!");
+        gameLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        gamePanel.add(gameLabel, BorderLayout.CENTER);
+        // home button
+        homeButton = new JButton("Inicio");
+        homeButton.setFont(new Font("Tahoma", Font.BOLD, 14));
+        homeButton.setBackground(Color.DARK_GRAY);
+        homeButton.setForeground(Color.WHITE);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        buttonPanel.add(homeButton);
+        gamePanel.add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private void prepareGameActions(){
+        homeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setContentPane(mainPanel);
+                revalidate();
+                repaint();
+            }
+        });
+    }
+
+    private void refreshAction(){
+        square = new Square();
     }
 
     public static void main(String args[]){
         SquareGUI gui = new SquareGUI();
         gui.setVisible(true);
     }
+
 }
