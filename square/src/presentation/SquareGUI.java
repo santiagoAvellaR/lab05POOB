@@ -4,10 +4,12 @@ import src.domain.Square;
 
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
 import java.io.File;
+import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.*;
-import java.util.*;
 
 /**
  * Write a description of class SquareGUI here.
@@ -15,7 +17,7 @@ import java.util.*;
  * @author (your name)
  * @version (a version number or a date)
  */
-public class SquareGUI extends JFrame{
+public class SquareGUI extends JFrame {
     // domain modelo
     private Square square;
     // Menu
@@ -27,7 +29,13 @@ public class SquareGUI extends JFrame{
     private JTextField holesTextField;
     // Game window
     private JPanel gamePanel;
-    JButton homeButton;
+    private JButton homeButton;
+    private JButton changeColorButton;
+    private JButton up;
+    private JButton down;
+    private JButton left;
+    private JButton right;
+    private JButton refresh;
 
 
     /**
@@ -35,7 +43,11 @@ public class SquareGUI extends JFrame{
      */
     private SquareGUI(){
         super("Square");
-        square = new Square();
+        try{
+            square = new Square("1","1");
+        }
+        catch (Exception e){
+        }
         prepareElements();
         prepareActions();
     }
@@ -184,6 +196,7 @@ public class SquareGUI extends JFrame{
                 setContentPane(gamePanel);
                 revalidate();
                 repaint();
+                createNewGame();
             }
         });
     }
@@ -200,11 +213,53 @@ public class SquareGUI extends JFrame{
         homeButton.setBackground(Color.DARK_GRAY);
         homeButton.setForeground(Color.WHITE);
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        buttonPanel.add(homeButton);
         gamePanel.add(buttonPanel, BorderLayout.SOUTH);
+        JPanel gamePanelOptions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        gamePanelOptions.setBorder(new CompoundBorder(new EmptyBorder(5,5,5,5), new TitledBorder("Opciones")));
+        gamePanelOptions.setLayout(new GridLayout(4,1,3,3));
+        changeColorButton = new JButton("Cambiar color");
+        changeColorButton.setFont(new Font("Tahoma", Font.BOLD, 14));
+        changeColorButton.setBackground(Color.DARK_GRAY);
+        changeColorButton.setForeground(Color.WHITE);
+        refresh = new JButton("Actualizar");
+        refresh.setFont(new Font("Tahoma", Font.BOLD, 14));
+        refresh.setBackground(Color.DARK_GRAY);
+        refresh.setForeground(Color.WHITE);
+        JPanel movePlayer = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        movePlayer.setBorder(new CompoundBorder(new EmptyBorder(5,5,5,5), new TitledBorder("Mover")));
+        movePlayer.setLayout(new GridLayout(2,1,3,3));
+        movePlayer.add(new JLabel());//vacio para que la flecha de arriba quede en la mitad
+        up = new JButton("↑");
+        up.setFont(new Font("Tahoma", Font.BOLD, 14));
+        up.setBackground(Color.DARK_GRAY);
+        up.setForeground(Color.WHITE);
+        movePlayer.add(up);
+        movePlayer.add(new JLabel());//vacio para que la flecha de arriba quede en la mitad
+        left = new JButton("←");
+        left.setFont(new Font("Tahoma", Font.BOLD, 14));
+        left.setBackground(Color.DARK_GRAY);
+        left.setForeground(Color.WHITE);
+        movePlayer.add(left);
+        down = new JButton("↓");
+        down.setFont(new Font("Tahoma", Font.BOLD, 14));
+        down.setBackground(Color.DARK_GRAY);
+        down.setForeground(Color.WHITE);
+        movePlayer.add(down);
+        right = new JButton("→");
+        right.setFont(new Font("Tahoma", Font.BOLD, 14));
+        right.setBackground(Color.DARK_GRAY);
+        right.setForeground(Color.WHITE);
+        movePlayer.add(right);
+        gamePanelOptions.add(movePlayer);
+        gamePanelOptions.add(changeColorButton);
+        gamePanelOptions.add(refresh);
+        gamePanelOptions.add(homeButton);
+
+        gamePanel.add(gamePanelOptions,BorderLayout.EAST);
     }
 
     private void prepareGameActions(){
+        SquareGUI gui = this;
         homeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -213,10 +268,50 @@ public class SquareGUI extends JFrame{
                 repaint();
             }
         });
+        changeColorButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ev){
+                Color color = JColorChooser.showDialog(gui, "Seleccionar Color", Color.WHITE);
+                if (color != null) {
+                    changeColor(color);
+                } else {
+                    System.out.println("No se seleccionó ningún color.");
+                }
+            }
+        });
     }
 
-    private void refreshAction(){
-        square = new Square();
+    private void prepareBoardElements() {
+        int boardSize = Integer.parseInt(sizeTextField.getText().trim());
+        JPanel boardPanel = new JPanel(new GridLayout(boardSize, boardSize));
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                JLabel label = new JLabel();
+                if (square.getSquare(i, j).equals("h")) {
+                    label.setBackground(Color.BLACK);
+                } else {
+                    label.setBackground(Color.WHITE);
+                }
+                label.setOpaque(true);
+                label.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                boardPanel.add(label);
+            }
+        }
+    }
+
+    private void changeColor(Color newColor){
+        square.changeColor(1, 1, newColor);
+    }
+
+    private void createNewGame(){
+        String boardSize = sizeTextField.getText().trim();
+        String numberHoles = holesTextField.getText().trim();
+        try{
+            square = new Square(boardSize, numberHoles);
+        }
+        catch (Exception e){
+            JOptionPane.showMessageDialog(this, "Error al crear  tablero: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public static void main(String args[]){
