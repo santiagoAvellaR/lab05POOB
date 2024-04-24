@@ -56,6 +56,7 @@ public class SquareGUI extends JFrame {
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         prepareMenuElements();
         prepareMainWindowElements();
+        setResizable(false);
     }
 
     private void prepareActions(){
@@ -185,15 +186,24 @@ public class SquareGUI extends JFrame {
     }
 
     private void prepareMainWindowActions(){
+        SquareGUI gui = this;
         newGameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                createNewGame();
-                prepareGameElements();
-                prepareGameActions();
-                setContentPane(gamePanel);
-                revalidate();
-                repaint();
+                try {
+                    createNewGame();
+                    prepareGameElements();
+                    prepareGameActions();
+                    setContentPane(gamePanel);
+                    revalidate();
+                    repaint();
+                }
+                catch (SquareException exception){
+                    JOptionPane.showMessageDialog(gui, "Error al crear  tablero: " + exception.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    setContentPane(mainPanel);
+                    revalidate();
+                    repaint();
+                }
             }
         });
     }
@@ -209,7 +219,7 @@ public class SquareGUI extends JFrame {
         gamePanel.add(buttonPanel, BorderLayout.SOUTH);
         JPanel gamePanelOptions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         gamePanelOptions.setBorder(new CompoundBorder(new EmptyBorder(5,5,5,5), new TitledBorder("Opciones")));
-        gamePanelOptions.setLayout(new GridLayout(4,1,3,3));
+        gamePanelOptions.setLayout(new GridLayout(6,1,3,3));
         changeColorButton = new JButton("Cambiar color");
         changeColorButton.setFont(new Font("Tahoma", Font.BOLD, 14));
         changeColorButton.setBackground(Color.DARK_GRAY);
@@ -294,17 +304,12 @@ public class SquareGUI extends JFrame {
         }
     }
 
-    private void createNewGame(){
+    private void createNewGame() throws SquareException {
         String boardSize = sizeTextField.getText().trim();
         String numberHoles = holesTextField.getText().trim();
-        try{
-            square = new Square(boardSize, numberHoles);
-            prepareBoardElements();
-        }
-        catch (SquareException e){
-            JOptionPane.showMessageDialog(this, "Error al crear  tablero: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            homeButton.doClick();
-        }
+
+        square = new Square(boardSize, numberHoles);
+        prepareBoardElements();
     }
 
     public static void main(String args[]){

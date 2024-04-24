@@ -66,28 +66,11 @@ public class Square {
     }
 
     private void makeMovement(int rowIni, int colIni, int rowFin, int colFin) throws SquareException{
+        //  ficha - hueco - hueroRelleno - huecoRellenoFicha
         if (squareBoard[rowIni][colIni] != null){
             String[] initialSquareInfo = squareBoard[rowIni][colIni].split(" ");
-            if (initialSquareInfo[1].equals("hole:false")){
-                if (initialSquareInfo[0].equals("square:true")){
-                    if (squareBoard[rowFin][colFin] != null){
-                        String[] finalSquareInfo = squareBoard[rowFin][colFin].split(" ");
-                        if (finalSquareInfo[1].equals("hole:true")){
-                            if (finalSquareInfo[2].equals(initialSquareInfo[2])){
-                                squareBoard[rowIni][colIni] = null;
-                                setSquareStatus(rowFin, rowIni, true, true);
-                            }
-                            else{
-                                gameEnd = true;
-                                throw new SquareException(SquareException.GAME_END);
-                            }
-                        }
-                    }
-                    else{
-                        squareBoard[rowFin][colFin] = squareBoard[rowIni][colIni];
-                        squareBoard[rowIni][colIni] = null;
-                    }
-                }
+            if (initialSquareInfo[1].equals("ficha")) {
+                
             }
         }
     }
