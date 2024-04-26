@@ -1,7 +1,5 @@
 package src.domain;
 
-import java.awt.*;
-
 /**
  * Write a description of class Square here.
  *
@@ -11,7 +9,8 @@ import java.awt.*;
 public class Square {
     private String[][] squareBoard;
     private int boardSize;
-    private int numberHoles;
+    private int holes;
+    private int piecesProperlyPlaced;
     private boolean gameEnd;
 
     /**
@@ -34,27 +33,41 @@ public class Square {
             if (intNumberHoles < 1 || intNumberHoles > Math.pow((float) this.boardSize,2)/2){
                 throw new SquareException(SquareException.MAXIMUM_NUMBER_HOLES_EXCEEDED);
             }
-            this.numberHoles = intNumberHoles;
+            this.holes = intNumberHoles;
         }
         else{
             throw new SquareException(SquareException.INVALID_NUMBER_HOLES);
         }
         gameEnd = false;
+        piecesProperlyPlaced = 0;
     }
+
+    public String[][] getBoard(){return squareBoard;}
 
     public String getSquare(int row, int col){
         return squareBoard[row][col];
+    }
+
+    public void setBoard(String[][] newBoard){
+        if (newBoard.length == boardSize){
+            squareBoard = newBoard;
+        }
     }
 
     public void changeColor(int row, int col, String color) throws SquareException {
         if (color == null){
             throw new SquareException(SquareException.INVALID_COLOR);
         }
-        if (squareBoard[row][col] != null){
+        if (squareBoard[row][col] == null){
             throw new SquareException(SquareException.EMPTY_SQUARE);
         }
         String[] values = squareBoard[row][col].split(" ");
-        squareBoard[row][col] = values[0] + " " +  values[1] + " " + color;
+        if (values[0].equals("ficha") || values[0].equals("hueco") || values[0].equals("huecoRelleno")){
+            squareBoard[row][col] = values[0] + " " + color;
+        }
+        else if (values[0].equals("huecoRellenoFciha")){
+            squareBoard[row][col] = values[0] + " " + values[1] + " " + color;
+        }
     }
 
     private void moveUp() throws SquareException {
@@ -73,18 +86,18 @@ public class Square {
         }
     }
 
-    private void moveRight() throws SquareException {
-        for (int j = 0; j < boardSize-1-1; j++){
+    private void moveLeft() throws SquareException {
+        for (int j = 1; j < boardSize; j++){
             for (int i = 0; i < boardSize; i++){
-                makeMovement(i, j, i, j+1);
+                makeMovement(i, j, i, j-1);
             }
         }
     }
 
-    private void moveLeft() throws SquareException {
+    private void moveRight() throws SquareException {
         for (int j = boardSize-1-1; j >= 0; j--){
             for (int i = 0; i < boardSize; i++){
-                makeMovement(i, j, i, j-1);
+                makeMovement(i, j, i, j+1);
             }
         }
     }
@@ -107,7 +120,7 @@ public class Square {
     private void makeMovement(int iniRow, int iniCol, int finRow, int finCol) throws SquareException{
         //  ficha - hueco - hueroRelleno - huecoRellenoFicha
         if(squareBoard[iniRow][finCol] == null){return;}
-        String[] initialSquareInfo= squareBoard[iniRow][finCol].split(" ");
+        String[] initialSquareInfo= squareBoard[iniRow][iniCol].trim().split(" ");
         if(initialSquareInfo[0].equals("hueco") || initialSquareInfo[0].equals("huecoRelleno")){return;}
         if (initialSquareInfo[0].equals("ficha")){
             if (squareBoard[finRow][finCol] == null){
@@ -115,19 +128,22 @@ public class Square {
                 squareBoard[iniRow][iniCol] = null;
             }
             else {
-                String[] finalSquareInfo = squareBoard[finRow][finCol].split(" ");
-                if (finalSquareInfo[0].equals("hueco")) {
+                String[] finalSquareInfo = squareBoard[finRow][finCol].trim().split(" ");
+                if (finalSquareInfo[0].equals("ficha") || finalSquareInfo[0].equals("huecoRellenoFicha")){return;}
+                else if (finalSquareInfo[0].equals("hueco")) {
                     if(finalSquareInfo[1].equals(initialSquareInfo[1])){
                         squareBoard[finRow][finCol] = "huecoRelleno" + " " + initialSquareInfo[1];
                         squareBoard[iniRow][iniCol] = null;
+                        piecesProperlyPlaced += 1;
+                        if (piecesProperlyPlaced == holes){throw new SquareException(SquareException.PLAYER_WON);}
                     }
                     else{
                         gameEnd = true;
-                        throw new SquareException(SquareException.GAME_END);
+                        throw new SquareException(SquareException.PLAYER_LOST);
                     }
                 }
                 else if (finalSquareInfo[0].equals("huecoRelleno")){
-                    squareBoard[finRow][finCol] = "huecoRelleno" + " " + finalSquareInfo[1] + " " + initialSquareInfo[1];
+                    squareBoard[finRow][finCol] = "huecoRellenoFicha" + " " + finalSquareInfo[1] + " " + initialSquareInfo[1];
                     squareBoard[iniRow][iniCol] = null;
                 }
             }
@@ -139,14 +155,17 @@ public class Square {
             }
             else {
                 String[] finalSquareInfo = squareBoard[finRow][finCol].split(" ");
-                if (finalSquareInfo[0].equals("hueco")) {
+                if (finalSquareInfo[0].equals("ficha") || finalSquareInfo[0].equals("huecoRellenoFicha")){return;}
+                else if (finalSquareInfo[0].equals("hueco")) {
                     if(finalSquareInfo[1].equals(initialSquareInfo[2])){
                         squareBoard[finRow][finCol] = "huecoRelleno" + " " + initialSquareInfo[2];
                         squareBoard[iniRow][iniCol] = "huecoRelleno" + " " + initialSquareInfo[1];
+                        piecesProperlyPlaced += 1;
+                        if (piecesProperlyPlaced == holes){throw new SquareException(SquareException.PLAYER_WON);}
                     }
                     else{
                         gameEnd = true;
-                        throw new SquareException(SquareException.GAME_END);
+                        throw new SquareException(SquareException.PLAYER_LOST);
                     }
                 }
                 else if (finalSquareInfo[0].equals("huecoRelleno")){

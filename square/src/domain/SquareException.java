@@ -7,7 +7,8 @@ public class SquareException extends Exception{
     public static final String MAXIMUM_NUMBER_HOLES_EXCEEDED = "El numero de huecos tiene que ser menor a x y mayor a 1";
     public static final String INVALID_COLOR = "El color es invalido, seleccione nuevamente";
     public static final String EMPTY_SQUARE = "La casilla seleccionada no tiene ficha o hueco";
-    public static final String GAME_END = "El juego ha terminado";
+    public static final String PLAYER_LOST = "Perdiste! Vuelve a intentarlo.";
+    public static final String PLAYER_WON = "Felicidades! Haz ganado.";
 
     public SquareException(String message){
         super(message);

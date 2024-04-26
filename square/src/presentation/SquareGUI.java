@@ -3,14 +3,16 @@ package src.presentation;
 import src.domain.Square;
 import src.domain.SquareException;
 
-import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
 
 /**
  * Write a description of class SquareGUI here.
@@ -283,14 +285,50 @@ public class SquareGUI extends JFrame {
     }
 
     private void prepareBoardElements() {
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        int screenHeight = screenSize.height/2;
         int boardSize = Integer.parseInt(sizeTextField.getText().trim());
-        boardPanel = new JPanel(new GridLayout(boardSize, boardSize));
+        boardPanel = new JPanel();
+        boardPanel.setLayout(new GridBagLayout());
+        boardPanel.setPreferredSize(new Dimension(screenHeight, screenHeight));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, 0, 0, 0);
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                JLabel label = new JLabel();
-                label.setOpaque(true);
-                label.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-                boardPanel.add(label);
+                JPanel panelH = new JPanel();
+                panelH.setBackground(Color.GRAY);
+                int tamaño;
+                if(boardSize>4)
+                    tamaño= screenHeight/(int)((float)(boardSize*1.2));
+                else
+                    tamaño= screenHeight/(int)((float)(boardSize*1.4));
+                panelH.setLayout(new BorderLayout());
+                panelH.add(new Label(), BorderLayout.WEST);
+                panelH.add(new Label(), BorderLayout.NORTH);
+                panelH.add(new Label(), BorderLayout.EAST);
+                panelH.add(new Label(), BorderLayout.SOUTH);
+                if((i+j)%3 == 0){//HUECO CON COLOR
+                    Label espacio = new Label();
+                    panelH.add(espacio);
+                    espacio.setBackground(Color.WHITE);
+                    panelH.add(espacio, BorderLayout.CENTER);
+                }
+                else if(i ==4){//HUECO SIN COLO
+                    panelH.add(new Label());
+                }
+                else{//BOTON
+                    JButton button = new JButton();
+                    panelH.add(button, BorderLayout.CENTER);
+                    panelH.setBackground(Color.WHITE);
+                }
+                Dimension panelSize = new Dimension(tamaño, tamaño);
+                panelH.setPreferredSize(panelSize);
+                panelH.setMinimumSize(panelSize);
+                panelH.setMaximumSize(panelSize);
+                panelH.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+                gbc.gridx = j; // Define la posición en la cuadrícula
+                gbc.gridy = i;
+                boardPanel.add(panelH, gbc);
             }
         }
     }
