@@ -272,6 +272,9 @@ public class SquareGUI extends JFrame {
             public void actionPerformed(ActionEvent ev){
                 try{
                     square.move('u');
+                    prepareBoardElementsAndFillTheBoard();
+                    actualizeBoardPanel();
+                    actualizeGamePanel();
                 }
                 catch(SquareException e){
                     JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -284,6 +287,9 @@ public class SquareGUI extends JFrame {
             public void actionPerformed(ActionEvent ev){
                 try{
                     square.move('l');
+                    prepareBoardElementsAndFillTheBoard();
+                    actualizeBoardPanel();
+                    actualizeGamePanel();
                 }
                 catch(SquareException e){
                     JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -296,6 +302,9 @@ public class SquareGUI extends JFrame {
             public void actionPerformed(ActionEvent ev){
                 try{
                     square.move('d');
+                    prepareBoardElementsAndFillTheBoard();
+                    actualizeBoardPanel();
+                    actualizeGamePanel();
                 }
                 catch(SquareException e){
                     JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -308,6 +317,9 @@ public class SquareGUI extends JFrame {
             public void actionPerformed(ActionEvent ev){
                 try{
                     square.move('r');
+                    prepareBoardElementsAndFillTheBoard();
+                    actualizeBoardPanel();
+                    actualizeGamePanel();
                 }
                 catch(SquareException e){
                     JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -325,36 +337,34 @@ public class SquareGUI extends JFrame {
         boardPanel.setPreferredSize(new Dimension(screenHeight, screenHeight));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 0, 0);
-
         HashMap<String, int[]> holesNotAsign = new HashMap<>();
         HashMap<String, int[]> piecesNotAsign = new HashMap<>();
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
                 JPanel squareOnBoard = new JPanel();
-                squareOnBoard.setBackground(Color.GRAY);
-                squareOnBoard.setLayout(new BorderLayout());
-                squareOnBoard.add(new Label(), BorderLayout.WEST);
-                squareOnBoard.add(new Label(), BorderLayout.NORTH);
-                squareOnBoard.add(new Label(), BorderLayout.EAST);
-                squareOnBoard.add(new Label(), BorderLayout.SOUTH);
+                squareOnBoard.setBackground(Color.WHITE);
+                int tamaño = boardSize > 4 ? screenHeight/(int)((float)(boardSize*1.2)) : screenHeight/(int)((float)(boardSize*1.4));
+                squareOnBoard.setPreferredSize( new Dimension(tamaño, tamaño));
+                squareOnBoard.setMinimumSize( new Dimension(tamaño, tamaño));
+                squareOnBoard.setMaximumSize( new Dimension(tamaño, tamaño));
+                squareOnBoard.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
                 if (square.getSquareInformation(i, j) != null) {
                     String[] squareInformation = square.getSquareInformation(i, j).split(" ");
                     if (squareInformation[0].equals("hueco")) {
                         if (piecesNotAsign.containsKey(squareInformation[1])) {
                             int[] indexPiece = piecesNotAsign.get(squareInformation[1]);
-                            addAndPaintPiece((JPanel) boardPanel.getComponent(boardSize * indexPiece[0] + indexPiece[1]), indexPiece[0], indexPiece[1], squareInformation[1], i, j);
+                            addAndPaintPiece((JPanel) boardPanel.getComponent(boardSize * indexPiece[0] + indexPiece[1]), indexPiece[0], indexPiece[1], squareInformation[1], i, j, tamaño);
                             piecesNotAsign.remove(squareInformation[1]);
                         }
                         else {
                             holesNotAsign.put(squareInformation[1], new int[]{i, j});
                         }
-                        addAndPaintHole(squareOnBoard, i, j, squareInformation[1]);
+                        addAndPaintHole(squareOnBoard, i, j, squareInformation[1], tamaño);
                     }
                     else if(squareInformation[0].equals("ficha")){
                         if (holesNotAsign.containsKey(squareInformation[1])) {
                             int[] indexHole = holesNotAsign.get(squareInformation[1]);
-                            addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], indexHole[0], indexHole[1]);
-                            addAndPaintHole((JPanel) boardPanel.getComponent(boardSize * indexHole[0] + indexHole[1]), indexHole[0], indexHole[1], squareInformation[1]);
+                            addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], indexHole[0], indexHole[1], tamaño);
                             holesNotAsign.remove(squareInformation[1]);
                         }
                         else {
@@ -362,16 +372,16 @@ public class SquareGUI extends JFrame {
                         }
                     }
                     else if (squareInformation[0].equals("huecoRelleno")){
-                        addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], i, j);
-                        addAndPaintHole(squareOnBoard, i, j, squareInformation[1]);
+                        addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], i, j, tamaño);
+                        addAndPaintHole(squareOnBoard, i, j, squareInformation[1], tamaño);
                     }
                     else if (squareInformation[0].equals("huecoRellenoFicha")){
-                        addAndPaintPiece(squareOnBoard, i, j, squareInformation[2], i, j);
-                        addAndPaintHole(squareOnBoard, i, j, squareInformation[1]);
+                        addAndPaintPiece(squareOnBoard, i, j, squareInformation[2], i, j, tamaño);
+                        addAndPaintHole(squareOnBoard, i, j, squareInformation[1], tamaño);
                         if (holesNotAsign.containsKey(squareInformation[2])){
                             int[] indexHole = holesNotAsign.get(squareInformation[2]);
-                            addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], indexHole[0], indexHole[1]);
-                            addAndPaintHole((JPanel) boardPanel.getComponent(boardSize * indexHole[0] + indexHole[1]), indexHole[0], indexHole[1], squareInformation[2]);
+                            addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], indexHole[0], indexHole[1], tamaño);
+                            addAndPaintHole((JPanel) boardPanel.getComponent(boardSize * indexHole[0] + indexHole[1]), indexHole[0], indexHole[1], squareInformation[2], tamaño);
                             holesNotAsign.remove(squareInformation[2]);
                         }
                         piecesNotAsign.put(squareInformation[2], new int[]{i, j});
@@ -380,11 +390,6 @@ public class SquareGUI extends JFrame {
                 else{
                     squareOnBoard.add(new Label());
                 }
-                int tamaño = boardSize > 4 ? screenHeight/(int)((float)(boardSize*1.2)) : screenHeight/(int)((float)(boardSize*1.4));
-                squareOnBoard.setPreferredSize( new Dimension(tamaño, tamaño));
-                squareOnBoard.setMinimumSize( new Dimension(tamaño, tamaño));
-                squareOnBoard.setMaximumSize( new Dimension(tamaño, tamaño));
-                squareOnBoard.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
                 gbc.gridx = j;
                 gbc.gridy = i;
                 boardPanel.add(squareOnBoard, gbc);
@@ -393,19 +398,37 @@ public class SquareGUI extends JFrame {
                 System.out.println();
             }
         }
+
     }
 
-    private void addAndPaintPiece(JPanel place, int buttonRow, int buttonCol, String color, int holeRow, int holeCol) {
+    private void addAndPaintPiece(JPanel place, int buttonRow, int buttonCol, String color, int holeRow, int holeCol, int tam) {
         ChangeColorButton piece = new ChangeColorButton("", buttonRow, buttonCol, color, holeRow, holeCol);
+        place.setLayout(new GridBagLayout());
         piece.setBackground(new Color(Integer.parseInt(color)));
-        place.add(piece, BorderLayout.CENTER);
+        int buttonSize = (int) (float)(tam * 0.5);
+        piece.setPreferredSize(new Dimension(buttonSize, buttonSize));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = buttonCol;
+        gbc.gridy = buttonRow;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.CENTER;
         place.setBackground(Color.WHITE);
+        place.add(piece, gbc);
     }
 
-    private void addAndPaintHole(JPanel place, int buttonRow, int buttonCol,  String color){
-        Label hole = new Label();
-        hole.setBackground(new Color(Integer.parseInt(color)));
-        place.add(hole, BorderLayout.CENTER);
+    private void addAndPaintHole(JPanel place, int buttonRow, int buttonCol,  String color, int tam){
+        JButton hole = new JButton();
+        place.setLayout(new GridBagLayout());
+        place.setBackground(new Color(Integer.parseInt(color)));
+        int buttonSize = (int)(float)(tam * 0.5);
+        hole.setPreferredSize(new Dimension(buttonSize, buttonSize));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = buttonCol;
+        gbc.gridy = buttonRow;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.anchor = GridBagConstraints.CENTER;
+        hole.setBackground(Color.WHITE);
+        place.add(hole, gbc);
     }
 
     private void createNewGame() throws SquareException {
@@ -413,7 +436,19 @@ public class SquareGUI extends JFrame {
         String numberHoles = holesTextField.getText().trim();
 
         square = new Square(boardSize, numberHoles);
-        prepareBoardElementsAndFillTheBoard(); // revisar si sobra
+        prepareBoardElementsAndFillTheBoard();
+    }
+
+    private Square getSquare(){return square;}
+
+    private void actualizeGamePanel(){
+        gamePanel.revalidate();
+        gamePanel.repaint();
+    }
+
+    private void actualizeBoardPanel(){
+        boardPanel.revalidate();
+        boardPanel.repaint();
     }
 
     public static void main(String args[]){
@@ -422,6 +457,7 @@ public class SquareGUI extends JFrame {
     }
 
     public class ChangeColorButton extends JButton {
+        private Square square1 = getSquare();
         private String color;
         private  int row;
         private  int column;
@@ -441,7 +477,9 @@ public class SquareGUI extends JFrame {
         public int getRow(){return row;}
         public int getColumn(){return column;}
         public String getColor(){return color;}
-        public int getNumberComponentHole = (square.getSize()*holeRow)+ holeCol;
+        public int getNumberComponentHole(){
+                int indexComponentHole = square1.getSize()* holeRow + holeCol;
+                return indexComponentHole;}
 
         public void setRow(int newRow){row = newRow;}
         public void setColumn(int newColumn){column = newColumn;}
@@ -460,11 +498,10 @@ public class SquareGUI extends JFrame {
                     setColor(newColorString);
                     square.changeColor(row, column, newColorString);
                     setBackground(new Color(newColor.getRGB()));
-                    square.changeColor(holeRow, holeCol, color);
-                    boardPanel.getComponent(getNumberComponentHole).setBackground(new Color(newColor.getRGB()));
+                    square.changeColor(holeRow, holeCol, newColorString);
+                    boardPanel.getComponent(getNumberComponentHole()).setBackground(new Color(newColor.getRGB()));
                 }
             }
         }
     }
-
 }

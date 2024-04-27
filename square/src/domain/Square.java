@@ -53,7 +53,7 @@ public class Square {
         ArrayList<Integer> y = new ArrayList<>();
         ArrayList<String> colors = new ArrayList<>();
         Random random = new Random();
-        for (int i = 0; i < holes*2*2; i++) {
+        for (int i = 0; i < holes*2; i++) {
             int numX = random.nextInt(boardSize);
             int numY = random.nextInt(boardSize);
             x.add(numX);
@@ -68,7 +68,7 @@ public class Square {
         while(count < holes*2) {
             int row = x.get(count);
             int col = y.get(count);
-            if(squareBoard[row][col]!= null){
+            if(squareBoard[row][col]== null){
                 if(count%2 == 0) {
                     squareBoard[row][col] = "ficha" + " " + colors.get(color);
                 }
@@ -134,6 +134,7 @@ public class Square {
         else if (values[0].equals("huecoRellenoFicha")){
             squareBoard[row][col] = values[0] + " " + values[1] + " " + color;
         }
+        printBoard();
     }
 
     private void moveUp() throws SquareException {
@@ -191,6 +192,7 @@ public class Square {
         else if (direction == 'l' || direction == 'L'){
             moveLeft();
         }
+        printBoard();
     }
 
     private void makeMovement(int iniRow, int iniCol, int finRow, int finCol) throws SquareException{
