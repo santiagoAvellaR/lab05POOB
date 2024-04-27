@@ -1,5 +1,9 @@
 package src.domain;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Random;
+
 /**
  * Write a description of class Square here.
  *
@@ -40,13 +44,79 @@ public class Square {
         }
         gameEnd = false;
         piecesProperlyPlaced = 0;
+        fillTheBoard();
+        printBoard();
+    }
+
+    public void fillTheBoard(){
+        ArrayList<Integer> x = new ArrayList<>();
+        ArrayList<Integer> y = new ArrayList<>();
+        ArrayList<String> colors = new ArrayList<>();
+        Random random = new Random();
+        for (int i = 0; i < holes*2; i++) {
+            int numX = random.nextInt(boardSize);
+            int numY = random.nextInt(boardSize);
+            x.add(numX);
+            y.add(numY);
+            String color = createColor();
+            if(!colors.contains(color)){
+                colors.add(color);
+            }
+        }
+        int count = 0;
+        int color = 0;
+        while(count < holes*2) {
+            int row = x.get(count);
+            int col = y.get(count);
+            if(squareBoard[row][col]!= null){
+                if(count%2 == 0) {
+                    squareBoard[row][col] = "ficha" + " " + colors.get(color);
+                }
+                else{
+                    squareBoard[row][col]  = "hueco" + " " + colors.get(color);
+                    color+=1;
+                }
+            }
+            else{
+                int[] pos = enblanco();
+                if(count%2 == 0) {
+                    squareBoard[pos[0]][pos[1]] = "ficha" + " " + colors.get(color);
+                }
+                else{
+                    squareBoard[pos[0]][pos[1]]   = "hueco" + " " + colors.get(color);
+                    color+=1;
+                }
+            }
+            count+=1;
+        }
+    }
+
+    public int[] enblanco(){
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                if (squareBoard[i][j] == null) {
+                    return new int[]{i, j};
+                }
+            }
+        }
+        return new int[]{-5,-5};
+    }
+
+    public String createColor(){
+        Random random = new Random();
+        int red = random.nextInt(256);
+        int green = random.nextInt(256);
+        int blue = random.nextInt(256);
+        Color newColor = new Color(red, green, blue);
+        return String.valueOf(newColor.getRGB());
     }
 
     public String[][] getBoard(){return squareBoard;}
 
-    public String getSquare(int row, int col){
+    public String getSquareInformation(int row, int col){
         return squareBoard[row][col];
     }
+
 
     public int getSize(){return boardSize;}
 
