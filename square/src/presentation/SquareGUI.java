@@ -13,7 +13,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -42,7 +41,6 @@ public class SquareGUI extends JFrame {
     private JButton leftButton;
     private JButton rightButton;
     private JButton refreshButton;
-    private ArrayList<ChangeColorButton> changeColorButtons;
 
 
     /**
@@ -256,9 +254,7 @@ public class SquareGUI extends JFrame {
         gamePanelOptions.add(homeButton);
         gamePanel.add(gamePanelOptions,BorderLayout.EAST);
 
-        prepareBoardElementsAndFillTheBoard();
         gamePanel.add(boardPanel, BorderLayout.CENTER);
-
     }
 
     private void prepareGameActions(){
@@ -336,7 +332,6 @@ public class SquareGUI extends JFrame {
             for (int j = 0; j < boardSize; j++) {
                 JPanel squareOnBoard = new JPanel();
                 squareOnBoard.setBackground(Color.GRAY);
-
                 squareOnBoard.setLayout(new BorderLayout());
                 squareOnBoard.add(new Label(), BorderLayout.WEST);
                 squareOnBoard.add(new Label(), BorderLayout.NORTH);
@@ -348,6 +343,7 @@ public class SquareGUI extends JFrame {
                         if (piecesNotAsign.containsKey(squareInformation[1])) {
                             int[] indexPiece = piecesNotAsign.get(squareInformation[1]);
                             addAndPaintPiece((JPanel) boardPanel.getComponent(boardSize * indexPiece[0] + indexPiece[1]), indexPiece[0], indexPiece[1], squareInformation[1], i, j);
+                            piecesNotAsign.remove(squareInformation[1]);
                         }
                         else {
                             holesNotAsign.put(squareInformation[1], new int[]{i, j});
@@ -359,6 +355,7 @@ public class SquareGUI extends JFrame {
                             int[] indexHole = holesNotAsign.get(squareInformation[1]);
                             addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], indexHole[0], indexHole[1]);
                             addAndPaintHole((JPanel) boardPanel.getComponent(boardSize * indexHole[0] + indexHole[1]), indexHole[0], indexHole[1], squareInformation[1]);
+                            holesNotAsign.remove(squareInformation[1]);
                         }
                         else {
                             piecesNotAsign.put(squareInformation[1], new int[]{i, j});
@@ -371,6 +368,13 @@ public class SquareGUI extends JFrame {
                     else if (squareInformation[0].equals("huecoRellenoFicha")){
                         addAndPaintPiece(squareOnBoard, i, j, squareInformation[2], i, j);
                         addAndPaintHole(squareOnBoard, i, j, squareInformation[1]);
+                        if (holesNotAsign.containsKey(squareInformation[2])){
+                            int[] indexHole = holesNotAsign.get(squareInformation[2]);
+                            addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], indexHole[0], indexHole[1]);
+                            addAndPaintHole((JPanel) boardPanel.getComponent(boardSize * indexHole[0] + indexHole[1]), indexHole[0], indexHole[1], squareInformation[2]);
+                            holesNotAsign.remove(squareInformation[2]);
+                        }
+                        piecesNotAsign.put(squareInformation[2], new int[]{i, j});
                     }
                 }
                 else{
@@ -384,6 +388,9 @@ public class SquareGUI extends JFrame {
                 gbc.gridx = j;
                 gbc.gridy = i;
                 boardPanel.add(squareOnBoard, gbc);
+                System.out.println("fichas: " + (piecesNotAsign.keySet()));
+                System.out.println("huecos: " + (holesNotAsign.keySet()));
+                System.out.println();
             }
         }
     }

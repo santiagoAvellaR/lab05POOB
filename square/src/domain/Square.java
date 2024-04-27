@@ -53,7 +53,7 @@ public class Square {
         ArrayList<Integer> y = new ArrayList<>();
         ArrayList<String> colors = new ArrayList<>();
         Random random = new Random();
-        for (int i = 0; i < holes*2; i++) {
+        for (int i = 0; i < holes*2*2; i++) {
             int numX = random.nextInt(boardSize);
             int numY = random.nextInt(boardSize);
             x.add(numX);
