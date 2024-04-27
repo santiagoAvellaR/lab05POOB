@@ -219,32 +219,32 @@ class SquareTest {
     void shouldMoveRight2() {
         try {
             square = new Square("4", "7");
-            String[][] initialBoard = {{"ficha azul", "ficha gris", "ficha rosado", "ficha morado"},
-                                       {"hueco azul", "hueco verde", "ficha verde", "hueco cafe"},
-                                       {"ficha amarillo", "hueco morado", "hueco gris", "hueco rosado"},
-                                       {"ficha cafe", "ficha azul", "ficha verde", "ficha amarillo"}};
+            String[][] initialBoard = {{"ficha azul", "ficha gris", "hueco gris", null},
+                                       {"hueco azul", "ficha verde", "hueco verde", null},
+                                       {"ficha amarillo", "ficha morado", "hueco morado", "hueco amarillo"},
+                                       {"ficha cafe", "hueco cafe", "ficha verde", "hueco verde"}};
             square.setBoard(initialBoard);
             square.move('R');
-            String[][] expectedAnswer = {{"ficha azul", "ficha gris", "ficha rosado", "ficha morado"},
-                                         {null, "hueco verde", "fichaRelleno verde", "hueco cafe"},
-                                         {"ficha amarillo", "huecoRelleno morado", "huecoRelleno gris", "huecoRelleno rosado"},
-                                         {"ficha cafe", "ficha azul", "ficha verde", "ficha amarillo"}};
+            String[][] expectedAnswer = {{null, "ficha azul", "huecoRelleno gris", null},
+                                         {"hueco azul", null, "huecoRelleno verde", null},
+                                         {null, "ficha amarillo", "huecoRelleno morado", "hueco amarillo"},
+                                         {null, "huecoRelleno cafe", null, "huecoRelleno verde"}};
             assertArrayEquals(expectedAnswer, square.getBoard());
             square.move('R');
-            String[][] expectedAnswer1 = {{"hueco azul", "fichaRelleno gris", "ficha rosado", "fichaRelleno morado"},
-                                          {null, "hueco verde", "fichaRelleno verde", "hueco cafe"},
-                                          {"ficha amarillo", null, "huecoRelleno morado", "huecoRelleno gris"},
-                                          {"ficha cafe", "ficha azul", "ficha verde", "ficha amarillo"}};
+            String[][] expectedAnswer1 = {{null, null, "huecoRellenoFicha gris azul", null},
+                                          {"hueco azul", null, "huecoRelleno verde", null},
+                                          {null, null, "huecoRellenoFicha morado amarillo", "hueco amarillo"},
+                                          {null, "huecoRelleno cafe", null, "huecoRelleno verde"}};
             assertArrayEquals(expectedAnswer1, square.getBoard());
             square.move('R');
-            String[][] expectedAnswer2 = {{"hueco azul", "fichaRelleno gris", "ficha rosado", "fichaRelleno morado"},
-                                          {null, "hueco verde", "fichaRelleno verde", "hueco cafe"},
-                                          {"ficha amarillo", null, null, "huecoRelleno morado"},
-                                          {"ficha cafe", "ficha azul", "ficha verde", "ficha amarillo"}};
+            String[][] expectedAnswer2 = {{null, null, "huecoRelleno gris", "ficha azul"},
+                                          {"hueco azul", null, "huecoRelleno verde", null},
+                                          {null, null, "huecoRelleno morado", "huecoRelleno amarillo"},
+                                          {null, "huecoRelleno cafe", null, "huecoRelleno verde"}};
             assertArrayEquals(expectedAnswer2, square.getBoard());
         }
         catch (SquareException e){
-            assertEquals(SquareException.PLAYER_WON, e.getMessage());
+            fail("threw exception");
         }
     }
 
@@ -272,33 +272,34 @@ class SquareTest {
     void shouldMoveLeft2() {
         try {
             square = new Square("4", "7");
-            String[][] initialBoard = {{"ficha azul", "ficha gris", "ficha rosado", "ficha morado"},
-                    {"hueco azul", "hueco verde", "ficha verde", "hueco cafe"},
-                    {"ficha amarillo", "hueco morado", "hueco gris", "hueco rosado"},
-                    {"ficha cafe", "ficha azul", "ficha verde", "ficha amarillo"}};
+            String[][] initialBoard = {{null, "hueco gris", "ficha gris", "ficha azul"},
+                                       {null, "hueco verde", "ficha verde", "hueco azul"},
+                                       {"hueco amarillo", "hueco morado", "ficha morado", "ficha amarillo"},
+                                       {"hueco verde", "ficha verde", "hueco cafe", "ficha cafe"}};
             square.setBoard(initialBoard);
             square.move('L');
-            String[][] expectedAnswer = {{"fichaRelleno azul", "fichaRelleno gris", "ficha rosado", "fichaRelleno morado"},
-                    {null, "hueco azul", "fichaRelleno verde", "hueco cafe"},
-                    {"ficha amarillo", "hueco morado", "hueco gris", "hueco rosado"},
-                    {"ficha cafe", "ficha azul", "ficha verde", "ficha amarillo"}};
+            String[][] expectedAnswer = {{null, "huecoRelleno gris", "ficha azul", null},
+                                         {null, "huecoRelleno verde", null, "hueco azul"},
+                                         {"hueco amarillo", "huecoRelleno morado", "ficha amarillo", null},
+                                         {"huecoRelleno verde", null, "huecoRelleno cafe", null}};
             assertArrayEquals(expectedAnswer, square.getBoard());
             square.move('L');
-            String[][] expectedAnswer1 = {{"fichaRelleno azul", "fichaRelleno gris", "ficha rosado", "fichaRelleno morado"},
-                    {"hueco azul", "fichaRelleno verde", "hueco cafe", null},
-                    {"ficha amarillo", "hueco morado", "hueco gris", "hueco rosado"},
-                    {"ficha cafe", "ficha azul", "ficha verde", "ficha amarillo"}};
+            String[][] expectedAnswer1 = {{null, "huecoRellenoFicha gris azul", null, null},
+                                          {null, "huecoRelleno verde", null, "hueco azul"},
+                                          {"hueco amarillo", "huecoRellenoFicha morado amarillo", null, null},
+                                          {"huecoRelleno verde", null, "huecoRelleno cafe", null}};
             assertArrayEquals(expectedAnswer1, square.getBoard());
             square.move('L');
-            String[][] expectedAnswer2 = {{"fichaRelleno azul", "fichaRelleno gris", "ficha rosado", "fichaRelleno morado"},
-                    {"hueco azul", "fichaRelleno verde", "hueco cafe", null},
-                    {"ficha amarillo", "hueco morado", null, "huecoRelleno gris"},
-                    {"ficha cafe", "ficha azul", "ficha verde", "ficha amarillo"}};
+            String[][] expectedAnswer2 = {{"ficha azul", "huecoRelleno gris", null, null},
+                                          {null, "huecoRelleno verde", null, "hueco azul"},
+                                          {"huecoRelleno amarillo", "huecoRelleno morado", null, null},
+                                          {"huecoRelleno verde", null, "huecoRelleno cafe", null}};
             assertArrayEquals(expectedAnswer2, square.getBoard());
         }
         catch (SquareException e){
             fail("threw exception");
         }
     }
+
 
 }

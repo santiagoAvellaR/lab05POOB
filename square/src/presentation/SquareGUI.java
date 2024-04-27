@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Write a description of class SquareGUI here.
@@ -23,6 +24,7 @@ import java.io.File;
 public class SquareGUI extends JFrame {
     // domain modelo
     private Square square;
+    private SquareGUI gui = this;
     // Menu
     private JMenuItem nuevo, abrir, guardar, cerrar;
     // Principal
@@ -34,12 +36,12 @@ public class SquareGUI extends JFrame {
     private JPanel gamePanel;
     private JPanel boardPanel;
     private JButton homeButton;
-    private JButton changeColorButton;
     private JButton upButton;
     private JButton downButton;
     private JButton leftButton;
     private JButton rightButton;
     private JButton refreshButton;
+    private ArrayList<ChangeColorButton> changeColorButtons;
 
 
     /**
@@ -62,7 +64,6 @@ public class SquareGUI extends JFrame {
     }
 
     private void prepareActions(){
-        SquareGUI gui = this;
         addWindowListener(new WindowAdapter(){
             @Override
             public void windowClosing(WindowEvent event){
@@ -99,7 +100,6 @@ public class SquareGUI extends JFrame {
     }
 
     private void prepareMenuActions(){
-        SquareGUI gui = this;
         cerrar.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent ev){
@@ -188,7 +188,6 @@ public class SquareGUI extends JFrame {
     }
 
     private void prepareMainWindowActions(){
-        SquareGUI gui = this;
         newGameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -222,10 +221,6 @@ public class SquareGUI extends JFrame {
         JPanel gamePanelOptions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         gamePanelOptions.setBorder(new CompoundBorder(new EmptyBorder(5,5,5,5), new TitledBorder("Opciones")));
         gamePanelOptions.setLayout(new GridLayout(6,1,3,3));
-        changeColorButton = new JButton("Cambiar color");
-        changeColorButton.setFont(new Font("Tahoma", Font.BOLD, 14));
-        changeColorButton.setBackground(Color.DARK_GRAY);
-        changeColorButton.setForeground(Color.WHITE);
         refreshButton = new JButton("Actualizar");
         refreshButton.setFont(new Font("Tahoma", Font.BOLD, 14));
         refreshButton.setBackground(Color.DARK_GRAY);
@@ -256,17 +251,16 @@ public class SquareGUI extends JFrame {
         rightButton.setForeground(Color.WHITE);
         movePlayerPlanel.add(rightButton);
         gamePanelOptions.add(movePlayerPlanel);
-        gamePanelOptions.add(changeColorButton);
         gamePanelOptions.add(refreshButton);
         gamePanelOptions.add(homeButton);
         gamePanel.add(gamePanelOptions,BorderLayout.EAST);
 
         prepareBoardElements();
         gamePanel.add(boardPanel, BorderLayout.CENTER);
+
     }
 
     private void prepareGameActions(){
-        SquareGUI gui = this;
         homeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -275,11 +269,52 @@ public class SquareGUI extends JFrame {
                 repaint();
             }
         });
-        changeColorButton.addActionListener(new ActionListener(){
+
+        upButton.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent ev){
-                Color color = JColorChooser.showDialog(gui, "Seleccionar Color", Color.WHITE);
-                changeColor(color);
+                try{
+                    square.move('u');
+                }
+                catch(SquareException e){
+                    JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        leftButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ev){
+                try{
+                    square.move('l');
+                }
+                catch(SquareException e){
+                    JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        downButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ev){
+                try{
+                    square.move('d');
+                }
+                catch(SquareException e){
+                    JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        rightButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ev){
+                try{
+                    square.move('r');
+                }
+                catch(SquareException e){
+                    JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
     }
@@ -295,50 +330,45 @@ public class SquareGUI extends JFrame {
         gbc.insets = new Insets(0, 0, 0, 0);
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
-                JPanel panelH = new JPanel();
-                panelH.setBackground(Color.GRAY);
-                int tamaño;
-                if(boardSize>4)
-                    tamaño= screenHeight/(int)((float)(boardSize*1.2));
-                else
-                    tamaño= screenHeight/(int)((float)(boardSize*1.4));
-                panelH.setLayout(new BorderLayout());
-                panelH.add(new Label(), BorderLayout.WEST);
-                panelH.add(new Label(), BorderLayout.NORTH);
-                panelH.add(new Label(), BorderLayout.EAST);
-                panelH.add(new Label(), BorderLayout.SOUTH);
+                JPanel squaresOnBoard = new JPanel();
+                squaresOnBoard.setBackground(Color.GRAY);
+                int tamaño = boardSize > 4 ? screenHeight/(int)((float)(boardSize*1.2)) : screenHeight/(int)((float)(boardSize*1.4));
+                squaresOnBoard.setLayout(new BorderLayout());
+                squaresOnBoard.add(new Label(), BorderLayout.WEST);
+                squaresOnBoard.add(new Label(), BorderLayout.NORTH);
+                squaresOnBoard.add(new Label(), BorderLayout.EAST);
+                squaresOnBoard.add(new Label(), BorderLayout.SOUTH);
                 if((i+j)%3 == 0){//HUECO CON COLOR
-                    Label espacio = new Label();
-                    panelH.add(espacio);
-                    espacio.setBackground(Color.WHITE);
-                    panelH.add(espacio, BorderLayout.CENTER);
+                    Label hole = new Label();
+                    squaresOnBoard.add(hole);
+                    hole.setBackground(Color.WHITE);
+                    squaresOnBoard.add(hole, BorderLayout.CENTER);
                 }
                 else if(i ==4){//HUECO SIN COLO
-                    panelH.add(new Label());
+                    squaresOnBoard.add(new Label());
                 }
                 else{//BOTON
-                    JButton button = new JButton();
-                    panelH.add(button, BorderLayout.CENTER);
-                    panelH.setBackground(Color.WHITE);
+                    JButton piece = new JButton();
+                    squaresOnBoard.add(piece, BorderLayout.CENTER);
+                    squaresOnBoard.setBackground(Color.WHITE);
+                    Color color = JColorChooser.showDialog(gui, "Seleccionar Color", Color.WHITE);
+                    if (color == null){
+                        JOptionPane.showMessageDialog(gui, "Color no valida, vuelva a seleccionar");
+                    }
+                    else{
+                        int colorString = color.getRGB();
+                        square.changeColor(i, j, Integer.toString(colorString));
+                    }
                 }
                 Dimension panelSize = new Dimension(tamaño, tamaño);
-                panelH.setPreferredSize(panelSize);
-                panelH.setMinimumSize(panelSize);
-                panelH.setMaximumSize(panelSize);
-                panelH.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+                squaresOnBoard.setPreferredSize(panelSize);
+                squaresOnBoard.setMinimumSize(panelSize);
+                squaresOnBoard.setMaximumSize(panelSize);
+                squaresOnBoard.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
                 gbc.gridx = j; // Define la posición en la cuadrícula
                 gbc.gridy = i;
-                boardPanel.add(panelH, gbc);
+                boardPanel.add(squaresOnBoard, gbc);
             }
-        }
-    }
-
-    private void changeColor(Color newColor){
-        try{
-            square.changeColor(1, 1, String.valueOf(newColor.getRGB()));
-        }
-        catch(SquareException e){
-            JOptionPane.showMessageDialog(this, "Error al cambiar el color: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -353,6 +383,44 @@ public class SquareGUI extends JFrame {
     public static void main(String args[]){
         SquareGUI gui = new SquareGUI();
         gui.setVisible(true);
+    }
+
+    public class ChangeColorButton extends JButton {
+        private String color;
+        private  int row;
+        private  int column;
+        private  int holeRow;
+        private  int holeCol;
+
+        public ChangeColorButton(String text, int row, int column, String color, int holeRow, int holeCol) {
+            super(text);
+            this.color = color;
+            this.row = row;
+            this.column = column;
+            this.holeRow = holeRow;
+            this.holeCol = holeCol;
+            addActionListener(new DefaultActionListener());
+        }
+
+        public int getRow(){return row;}
+        public int getColumn(){return column;}
+        public String getColor(){return color;}
+        public int getNumberComponentHole = (square.getSize()*holeRow)+ holeCol;
+
+        public void setRow(int newRow){row = newRow;}
+        public void setColumn(int newColumn){column = newColumn;}
+        public void setColor(String newColor){color = newColor;}
+
+
+        private class DefaultActionListener implements ActionListener {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                square.changeColor(row, column, color);
+                setBackground(new Color(color.indexOf(color)));
+                square.changeColor(holeRow, holeCol, color);
+                boardPanel.getComponent(getNumberComponentHole).setBackground(new Color(color.indexOf(color)));
+            }
+        }
     }
 
 }

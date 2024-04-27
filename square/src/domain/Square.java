@@ -48,24 +48,20 @@ public class Square {
         return squareBoard[row][col];
     }
 
+    public int getSize(){return boardSize;}
+
     public void setBoard(String[][] newBoard){
         if (newBoard.length == boardSize){
             squareBoard = newBoard;
         }
     }
 
-    public void changeColor(int row, int col, String color) throws SquareException {
-        if (color == null){
-            throw new SquareException(SquareException.INVALID_COLOR);
-        }
-        if (squareBoard[row][col] == null){
-            throw new SquareException(SquareException.EMPTY_SQUARE);
-        }
+    public void changeColor(int row, int col, String color) {
         String[] values = squareBoard[row][col].split(" ");
         if (values[0].equals("ficha") || values[0].equals("hueco") || values[0].equals("huecoRelleno")){
             squareBoard[row][col] = values[0] + " " + color;
         }
-        else if (values[0].equals("huecoRellenoFciha")){
+        else if (values[0].equals("huecoRellenoFicha")){
             squareBoard[row][col] = values[0] + " " + values[1] + " " + color;
         }
     }
@@ -94,8 +90,18 @@ public class Square {
         }
     }
 
+    private void printBoard(){
+        for (int i = 0; i < boardSize; i++){
+            for (int j = 0; j < boardSize; j++){
+                System.out.print(squareBoard[i][j] + ", ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
     private void moveRight() throws SquareException {
-        for (int j = boardSize-1-1; j >= 0; j--){
+        for (int j = boardSize-1-1; j > -1; j--){
             for (int i = 0; i < boardSize; i++){
                 makeMovement(i, j, i, j+1);
             }
@@ -119,7 +125,7 @@ public class Square {
 
     private void makeMovement(int iniRow, int iniCol, int finRow, int finCol) throws SquareException{
         //  ficha - hueco - hueroRelleno - huecoRellenoFicha
-        if(squareBoard[iniRow][finCol] == null){return;}
+        if(squareBoard[iniRow][iniCol] == null){return;}
         String[] initialSquareInfo= squareBoard[iniRow][iniCol].trim().split(" ");
         if(initialSquareInfo[0].equals("hueco") || initialSquareInfo[0].equals("huecoRelleno")){return;}
         if (initialSquareInfo[0].equals("ficha")){
@@ -151,7 +157,7 @@ public class Square {
         else if (initialSquareInfo[0].equals("huecoRellenoFicha")){
             if (squareBoard[finRow][finCol] == null){
                 squareBoard[finRow][finCol] = "ficha" + " " + initialSquareInfo[2];
-                squareBoard[iniRow][iniCol] = "hueco" + " " + initialSquareInfo[1];
+                squareBoard[iniRow][iniCol] = "huecoRelleno" + " " + initialSquareInfo[1];
             }
             else {
                 String[] finalSquareInfo = squareBoard[finRow][finCol].split(" ");
