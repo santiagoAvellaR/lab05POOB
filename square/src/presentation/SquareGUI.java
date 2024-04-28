@@ -239,12 +239,12 @@ public class SquareGUI extends JFrame {
         JPanel gamePanelOptions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         gamePanelOptions.setBorder(new CompoundBorder(new EmptyBorder(5,5,5,5), new TitledBorder("Opciones")));
         gamePanelOptions.setLayout(new GridLayout(6,1,3,3));
-        changeSizeButton = new JButton("Actualizar");
+        changeSizeButton = new JButton("Cambiar de tamaño");
         changeSizeButton.setFont(new Font("Tahoma", Font.BOLD, 14));
         changeSizeButton.setBackground(Color.DARK_GRAY);
         changeSizeButton.setForeground(Color.WHITE);
         JPanel movePlayerPlanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        movePlayerPlanel.setBorder(new CompoundBorder(new EmptyBorder(5,5,5,5), new TitledBorder("Mover")));
+        movePlayerPlanel.setBorder(new CompoundBorder());
         movePlayerPlanel.setLayout(new GridLayout(2,1,3,3));
         movePlayerPlanel.add(new JLabel());
         upButton = new JButton("↑");
@@ -296,10 +296,13 @@ public class SquareGUI extends JFrame {
         homeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setContentPane(mainPanel);
-                revalidate();
-                repaint();
-                square = null;
+                int option = JOptionPane.showConfirmDialog(gui, "¿Quieres abandonar la partida, no se guardara tu progreso?", "Abandonar Partida", JOptionPane.YES_NO_OPTION);
+                if (option == JOptionPane.YES_OPTION) {
+                    setContentPane(mainPanel);
+                    revalidate();
+                    repaint();
+                    square = null;
+                }
             }
         });
 
@@ -313,14 +316,20 @@ public class SquareGUI extends JFrame {
                 panel.add(newSize);
                 panel.add(new JTextField("Número de huecos: "));
                 panel.add(newNumberHoles);
-                int option = JOptionPane.showConfirmDialog(null, panel, "Nuevo juego", JOptionPane.OK_CANCEL_OPTION);
-                if (option == JOptionPane.OK_OPTION) {
+                String[] botones = {"OK", "Cancelar", "Mantener mismas medidas"};
+                int option = JOptionPane.showOptionDialog(null, panel, "Cambio de Tamaño", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, botones, botones[0]);
+                if (option == 0) {
                     sizeTextField.setText(newSize.getText().trim());
                     holesTextField.setText(newNumberHoles.getText().trim());
                     newGameButton.doClick();
                 }
-                else if (option == JOptionPane.CANCEL_OPTION) {
-                    homeButton.doClick();
+                else if (option == 1) {
+                }
+                else if (option == 2) {
+                    newGameButton.doClick();
+                }
+                else {
+                    JOptionPane.showMessageDialog(gui, "Acción no valida, vuelva a intentarlo: ", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -332,7 +341,7 @@ public class SquareGUI extends JFrame {
                     square.move('u');
                 }
                 catch(SquareException e){
-                    JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    offerPlayAgain(e.getMessage());
                 }
                 finally {
                     refresh();
