@@ -12,10 +12,12 @@ import java.util.Random;
  */
 public class Square {
     private String[][] squareBoard;
-    private int boardSize;
-    private int holes;
+    private String[][] originalBoard;
+    private final int boardSize;
+    private final int holes;
     private int piecesProperlyPlaced;
     private boolean gameEnd;
+    private int turns;
 
     /**
      * Constructor for objects of class Square
@@ -45,10 +47,17 @@ public class Square {
         gameEnd = false;
         piecesProperlyPlaced = 0;
         fillTheBoard();
-        printBoard();
+        //printBoard();
+        originalBoard = getBoard();
     }
 
-    public void fillTheBoard(){
+    public void reStart(){
+        setBoard(originalBoard);
+        gameEnd = false;
+        piecesProperlyPlaced = 0;
+    }
+
+    private void fillTheBoard(){
         ArrayList<Integer> x = new ArrayList<>();
         ArrayList<Integer> y = new ArrayList<>();
         ArrayList<String> colors = new ArrayList<>();
@@ -91,7 +100,7 @@ public class Square {
         }
     }
 
-    public int[] enblanco(){
+    private int[] enblanco(){
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
                 if (squareBoard[i][j] == null) {
@@ -102,7 +111,7 @@ public class Square {
         return new int[]{-5,-5};
     }
 
-    public String createColor(){
+    private String createColor(){
         Random random = new Random();
         int red = random.nextInt(256);
         int green = random.nextInt(256);
@@ -117,6 +126,17 @@ public class Square {
         return squareBoard[row][col];
     }
 
+    public int getPieces(){
+        return piecesProperlyPlaced*100;
+    }
+
+    public int getHoles(){
+        return holes;
+    }
+
+    public int getTurn(){
+        return turns;
+    }
 
     public int getSize(){return boardSize;}
 
@@ -134,7 +154,17 @@ public class Square {
         else if (values[0].equals("huecoRellenoFicha")){
             squareBoard[row][col] = values[0] + " " + values[1] + " " + color;
         }
-        printBoard();
+        //printBoard();
+    }
+
+    private void printBoard(){
+        for (int i = 0; i < boardSize; i++){
+            for (int j = 0; j < boardSize; j++){
+                System.out.print(squareBoard[i][j] + ", ");
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 
     private void moveUp() throws SquareException {
@@ -161,16 +191,6 @@ public class Square {
         }
     }
 
-    private void printBoard(){
-        for (int i = 0; i < boardSize; i++){
-            for (int j = 0; j < boardSize; j++){
-                System.out.print(squareBoard[i][j] + ", ");
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
-
     private void moveRight() throws SquareException {
         for (int j = boardSize-1-1; j > -1; j--){
             for (int i = 0; i < boardSize; i++){
@@ -180,6 +200,7 @@ public class Square {
     }
 
     public void move(char direction) throws SquareException {
+        turns +=1;
         if (direction == 'u' || direction == 'U'){
             moveUp();
         }
@@ -192,63 +213,75 @@ public class Square {
         else if (direction == 'l' || direction == 'L'){
             moveLeft();
         }
-        printBoard();
+        //printBoard();
     }
 
     private void makeMovement(int iniRow, int iniCol, int finRow, int finCol) throws SquareException{
         //  ficha - hueco - hueroRelleno - huecoRellenoFicha
         if(squareBoard[iniRow][iniCol] == null){return;}
         String[] initialSquareInfo= squareBoard[iniRow][iniCol].trim().split(" ");
-        if(initialSquareInfo[0].equals("hueco") || initialSquareInfo[0].equals("huecoRelleno")){return;}
-        if (initialSquareInfo[0].equals("ficha")){
-            if (squareBoard[finRow][finCol] == null){
-                squareBoard[finRow][finCol] = squareBoard[iniRow][iniCol];
-                squareBoard[iniRow][iniCol] = null;
+        switch (initialSquareInfo[0]) {
+            case "hueco", "huecoRelleno" -> {
+                return;
             }
-            else {
-                String[] finalSquareInfo = squareBoard[finRow][finCol].trim().split(" ");
-                if (finalSquareInfo[0].equals("ficha") || finalSquareInfo[0].equals("huecoRellenoFicha")){return;}
-                else if (finalSquareInfo[0].equals("hueco")) {
-                    if(finalSquareInfo[1].equals(initialSquareInfo[1])){
-                        squareBoard[finRow][finCol] = "huecoRelleno" + " " + initialSquareInfo[1];
-                        squareBoard[iniRow][iniCol] = null;
-                        piecesProperlyPlaced += 1;
-                        if (piecesProperlyPlaced == holes){throw new SquareException(SquareException.PLAYER_WON);}
-                    }
-                    else{
-                        gameEnd = true;
-                        throw new SquareException(SquareException.PLAYER_LOST);
-                    }
-                }
-                else if (finalSquareInfo[0].equals("huecoRelleno")){
-                    squareBoard[finRow][finCol] = "huecoRellenoFicha" + " " + finalSquareInfo[1] + " " + initialSquareInfo[1];
+            case "ficha" -> {
+                if (squareBoard[finRow][finCol] == null) {
+                    squareBoard[finRow][finCol] = squareBoard[iniRow][iniCol];
                     squareBoard[iniRow][iniCol] = null;
+                } else {
+                    String[] finalSquareInfo = squareBoard[finRow][finCol].trim().split(" ");
+                    switch (finalSquareInfo[0]) {
+                        case "ficha", "huecoRellenoFicha" -> {
+                            return;
+                        }
+                        case "hueco" -> {
+                            if (finalSquareInfo[1].equals(initialSquareInfo[1])) {
+                                squareBoard[finRow][finCol] = "huecoRelleno" + " " + initialSquareInfo[1];
+                                squareBoard[iniRow][iniCol] = null;
+                                piecesProperlyPlaced += 1;
+                                if (piecesProperlyPlaced == holes) {
+                                    throw new SquareException(SquareException.PLAYER_WON);
+                                }
+                            } else {
+                                gameEnd = true;
+                                throw new SquareException(SquareException.PLAYER_LOST);
+                            }
+                        }
+                        case "huecoRelleno" -> {
+                            squareBoard[finRow][finCol] = "huecoRellenoFicha" + " " + finalSquareInfo[1] + " " + initialSquareInfo[1];
+                            squareBoard[iniRow][iniCol] = null;
+                        }
+                    }
                 }
             }
-        }
-        else if (initialSquareInfo[0].equals("huecoRellenoFicha")){
-            if (squareBoard[finRow][finCol] == null){
-                squareBoard[finRow][finCol] = "ficha" + " " + initialSquareInfo[2];
-                squareBoard[iniRow][iniCol] = "huecoRelleno" + " " + initialSquareInfo[1];
-            }
-            else {
-                String[] finalSquareInfo = squareBoard[finRow][finCol].split(" ");
-                if (finalSquareInfo[0].equals("ficha") || finalSquareInfo[0].equals("huecoRellenoFicha")){return;}
-                else if (finalSquareInfo[0].equals("hueco")) {
-                    if(finalSquareInfo[1].equals(initialSquareInfo[2])){
-                        squareBoard[finRow][finCol] = "huecoRelleno" + " " + initialSquareInfo[2];
-                        squareBoard[iniRow][iniCol] = "huecoRelleno" + " " + initialSquareInfo[1];
-                        piecesProperlyPlaced += 1;
-                        if (piecesProperlyPlaced == holes){throw new SquareException(SquareException.PLAYER_WON);}
-                    }
-                    else{
-                        gameEnd = true;
-                        throw new SquareException(SquareException.PLAYER_LOST);
-                    }
-                }
-                else if (finalSquareInfo[0].equals("huecoRelleno")){
-                    squareBoard[finRow][finCol] = "huecoRellenoFicha" + " " + finalSquareInfo[1] + " " + initialSquareInfo[2];
+            case "huecoRellenoFicha" -> {
+                if (squareBoard[finRow][finCol] == null) {
+                    squareBoard[finRow][finCol] = "ficha" + " " + initialSquareInfo[2];
                     squareBoard[iniRow][iniCol] = "huecoRelleno" + " " + initialSquareInfo[1];
+                } else {
+                    String[] finalSquareInfo = squareBoard[finRow][finCol].split(" ");
+                    switch (finalSquareInfo[0]) {
+                        case "ficha", "huecoRellenoFicha" -> {
+                            return;
+                        }
+                        case "hueco" -> {
+                            if (finalSquareInfo[1].equals(initialSquareInfo[2])) {
+                                squareBoard[finRow][finCol] = "huecoRelleno" + " " + initialSquareInfo[2];
+                                squareBoard[iniRow][iniCol] = "huecoRelleno" + " " + initialSquareInfo[1];
+                                piecesProperlyPlaced += 1;
+                                if (piecesProperlyPlaced == holes) {
+                                    throw new SquareException(SquareException.PLAYER_WON);
+                                }
+                            } else {
+                                gameEnd = true;
+                                throw new SquareException(SquareException.PLAYER_LOST);
+                            }
+                        }
+                        case "huecoRelleno" -> {
+                            squareBoard[finRow][finCol] = "huecoRellenoFicha" + " " + finalSquareInfo[1] + " " + initialSquareInfo[2];
+                            squareBoard[iniRow][iniCol] = "huecoRelleno" + " " + initialSquareInfo[1];
+                        }
+                    }
                 }
             }
         }

@@ -302,4 +302,69 @@ class SquareTest {
     }
 
 
+    // TEST CHANGE COLOR
+    @Test
+    void shouldChangeColor(){
+        try {
+            square = new Square("4", "7");
+            String[][] initialBoard = {{null, "hueco gris", "ficha gris", "ficha azul"},
+                    {null, "hueco verde", "ficha verde", "hueco azul"},
+                    {"hueco amarillo", "hueco morado", "ficha morado", "ficha amarillo"},
+                    {"hueco verde", "ficha verde", "hueco cafe", "ficha cafe"}};
+            square.setBoard(initialBoard);
+            square.changeColor(1,1, "negro");
+            square.changeColor(1,2, "negro");
+            String[][] respuesta = {{null, "hueco gris", "ficha gris", "ficha azul"},
+                    {null, "hueco negro", "ficha negro", "hueco azul"},
+                    {"hueco amarillo", "hueco morado", "ficha morado", "ficha amarillo"},
+                    {"hueco verde", "ficha verde", "hueco cafe", "ficha cafe"}};
+            assertArrayEquals(respuesta, square.getBoard());
+        }
+        catch (SquareException e){
+            fail("threw exception");
+        }
+    }
+
+    @Test
+    void shouldChangeColor1(){
+        try {
+            square = new Square("4", "7");
+            String[][] initialBoard = {{null, "hueco gris", "ficha gris", "ficha azul"},
+                    {null, "huecoRellenoFicha verde azul", "ficha verde", "hueco azul"},
+                    {"hueco amarillo", "hueco morado", "ficha morado", "ficha amarillo"},
+                    {"hueco verde", "ficha verde", "hueco cafe", "ficha cafe"}};
+            square.setBoard(initialBoard);
+            square.changeColor(1,1, "negro");
+            String[][] respuesta = {{null, "hueco gris", "ficha gris", "ficha azul"},
+                    {null, "huecoRellenoFicha verde negro", "ficha verde", "hueco azul"},
+                    {"hueco amarillo", "hueco morado", "ficha morado", "ficha amarillo"},
+                    {"hueco verde", "ficha verde", "hueco cafe", "ficha cafe"}};
+            assertArrayEquals(respuesta, square.getBoard());
+        }
+        catch (SquareException e){
+            fail("threw exception");
+        }
+    }
+
+    @Test
+    public void shouldChangeColo2r(){
+        try {
+            square = new Square("4", "3");
+            String[][] initialBoard = {{null, "ficha rosado", "ficha azul", null},
+                    {null, "huecoRellenoFicha verde azul", null,null},
+                    {null, "hueco verde", null, null},
+                    {null, "hueco azul", null, "hueco rosado"}};
+            square.setBoard(initialBoard);
+            square.changeColor(1,1, "negro");
+            square.changeColor(2,1, "negro");
+            String[][] respuesta = {{null, "ficha rosado", "ficha azul", null},
+                    {null, "huecoRellenoFicha verde negro", null,null},
+                    {null, "hueco negro", null, null},
+                    {null, "hueco azul", null, "hueco rosado"}};
+            assertArrayEquals(respuesta, square.getBoard());
+        }catch (SquareException e){
+            fail("threw exception");
+        }
+    }
+
 }

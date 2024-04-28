@@ -22,9 +22,10 @@ import java.util.HashMap;
  * @version (a version number or a date)
  */
 public class SquareGUI extends JFrame {
+    Dimension screenSize;
     // domain modelo
     private Square square;
-    private SquareGUI gui = this;
+    private final SquareGUI gui = this;
     // Menu
     private JMenuItem nuevo, abrir, guardar, cerrar;
     // Principal
@@ -33,6 +34,8 @@ public class SquareGUI extends JFrame {
     private JTextField sizeTextField;
     private JTextField holesTextField;
     // Game window
+    private JLabel scoreGame;
+    private JLabel turns;
     private JPanel gamePanel;
     private JPanel boardPanel;
     private JButton homeButton;
@@ -40,7 +43,8 @@ public class SquareGUI extends JFrame {
     private JButton downButton;
     private JButton leftButton;
     private JButton rightButton;
-    private JButton refreshButton;
+    private JButton changeSizeButton;
+    private JButton reStartButton;
 
 
     /**
@@ -53,7 +57,7 @@ public class SquareGUI extends JFrame {
     }
 
     private void prepareElements(){
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setSize(screenSize.width/2, screenSize.height/2);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -99,6 +103,21 @@ public class SquareGUI extends JFrame {
     }
 
     private void prepareMenuActions(){
+        nuevo.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ev){
+                if(square != null){
+                    int option = JOptionPane.showConfirmDialog(gui, "¿Quieres guardar la partida?", "Guardar Juego", JOptionPane.YES_NO_OPTION);
+                    if(option == JOptionPane.YES_OPTION){
+                        guardar.doClick();
+                    }
+                    newGameButton.doClick();
+                }
+                else {
+                    newGameButton.doClick();
+                }
+            }
+        });
         cerrar.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent ev){
@@ -220,10 +239,10 @@ public class SquareGUI extends JFrame {
         JPanel gamePanelOptions = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         gamePanelOptions.setBorder(new CompoundBorder(new EmptyBorder(5,5,5,5), new TitledBorder("Opciones")));
         gamePanelOptions.setLayout(new GridLayout(6,1,3,3));
-        refreshButton = new JButton("Actualizar");
-        refreshButton.setFont(new Font("Tahoma", Font.BOLD, 14));
-        refreshButton.setBackground(Color.DARK_GRAY);
-        refreshButton.setForeground(Color.WHITE);
+        changeSizeButton = new JButton("Actualizar");
+        changeSizeButton.setFont(new Font("Tahoma", Font.BOLD, 14));
+        changeSizeButton.setBackground(Color.DARK_GRAY);
+        changeSizeButton.setForeground(Color.WHITE);
         JPanel movePlayerPlanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         movePlayerPlanel.setBorder(new CompoundBorder(new EmptyBorder(5,5,5,5), new TitledBorder("Mover")));
         movePlayerPlanel.setLayout(new GridLayout(2,1,3,3));
@@ -250,11 +269,27 @@ public class SquareGUI extends JFrame {
         rightButton.setForeground(Color.WHITE);
         movePlayerPlanel.add(rightButton);
         gamePanelOptions.add(movePlayerPlanel);
-        gamePanelOptions.add(refreshButton);
+        gamePanelOptions.add(changeSizeButton);
         gamePanelOptions.add(homeButton);
+        scoreGame = new JLabel("Puntuacion: " + (int)(square.getPieces()/square.getHoles()) + "%");
+        gamePanelOptions.add(scoreGame);
+        Font nuevaFuente = new Font("Tahoma", Font.BOLD, 20);
+        scoreGame.setFont(nuevaFuente);
+        turns = new JLabel("Turno #: " + (int)square.getTurn());
+        gamePanelOptions.add(turns);
+        turns.setFont(nuevaFuente);
+        reStartButton = new JButton("Reiniciar");
+        reStartButton.setFont(new Font("Tahoma", Font.BOLD, 14));
+        reStartButton.setBackground(Color.DARK_GRAY);
+        reStartButton.setForeground(Color.WHITE);
+        gamePanelOptions.add(reStartButton);
         gamePanel.add(gamePanelOptions,BorderLayout.EAST);
-
         gamePanel.add(boardPanel, BorderLayout.CENTER);
+    }
+
+    private void updateScore() {
+        scoreGame.setText("Puntuación: " +  (int)(square.getPieces()/square.getHoles()) +"%");
+        turns.setText("Turno #: " + (int)square.getTurn());
     }
 
     private void prepareGameActions(){
@@ -264,6 +299,29 @@ public class SquareGUI extends JFrame {
                 setContentPane(mainPanel);
                 revalidate();
                 repaint();
+                square = null;
+            }
+        });
+
+        changeSizeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JPanel panel = new JPanel(new GridLayout(2, 2));
+                JTextField newSize = new JTextField();
+                JTextField newNumberHoles = new JTextField();
+                panel.add(new JTextField("Tamaño: "));
+                panel.add(newSize);
+                panel.add(new JTextField("Número de huecos: "));
+                panel.add(newNumberHoles);
+                int option = JOptionPane.showConfirmDialog(null, panel, "Nuevo juego", JOptionPane.OK_CANCEL_OPTION);
+                if (option == JOptionPane.OK_OPTION) {
+                    sizeTextField.setText(newSize.getText().trim());
+                    holesTextField.setText(newNumberHoles.getText().trim());
+                    newGameButton.doClick();
+                }
+                else if (option == JOptionPane.CANCEL_OPTION) {
+                    homeButton.doClick();
+                }
             }
         });
 
@@ -272,12 +330,13 @@ public class SquareGUI extends JFrame {
             public void actionPerformed(ActionEvent ev){
                 try{
                     square.move('u');
-                    prepareBoardElementsAndFillTheBoard();
-                    actualizeBoardPanel();
-                    actualizeGamePanel();
                 }
                 catch(SquareException e){
                     JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                finally {
+                    refresh();
+                    updateScore();
                 }
             }
         });
@@ -287,12 +346,13 @@ public class SquareGUI extends JFrame {
             public void actionPerformed(ActionEvent ev){
                 try{
                     square.move('l');
-                    prepareBoardElementsAndFillTheBoard();
-                    actualizeBoardPanel();
-                    actualizeGamePanel();
                 }
                 catch(SquareException e){
-                    JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    offerPlayAgain(e.getMessage());
+                }
+                finally {
+                    refresh();
+                    updateScore();
                 }
             }
         });
@@ -302,12 +362,13 @@ public class SquareGUI extends JFrame {
             public void actionPerformed(ActionEvent ev){
                 try{
                     square.move('d');
-                    prepareBoardElementsAndFillTheBoard();
-                    actualizeBoardPanel();
-                    actualizeGamePanel();
                 }
                 catch(SquareException e){
-                    JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    offerPlayAgain(e.getMessage());
+                }
+                finally {
+                    refresh();
+                    updateScore();
                 }
             }
         });
@@ -317,19 +378,43 @@ public class SquareGUI extends JFrame {
             public void actionPerformed(ActionEvent ev){
                 try{
                     square.move('r');
-                    prepareBoardElementsAndFillTheBoard();
-                    actualizeBoardPanel();
-                    actualizeGamePanel();
                 }
                 catch(SquareException e){
-                    JOptionPane.showMessageDialog(gui, "Error al mover: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                    offerPlayAgain(e.getMessage());
                 }
+                finally {
+                    refresh();
+                    updateScore();
+                }
+            }
+        });
+        reStartButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent ev){
+                square.reStart();
+                refresh();
+                updateScore();
             }
         });
     }
 
+    private void offerPlayAgain(String message){
+        if (message.equals(SquareException.PLAYER_LOST) || message.equals(SquareException.PLAYER_WON)) {
+            String mensaje = (message.equals(SquareException.PLAYER_LOST)) ? "Perdiste. " : "Ganaste. ";
+            int option = JOptionPane.showConfirmDialog(gui,   mensaje + "¿Quieres volver a jugar?", "Juego Finalizado", JOptionPane.YES_NO_OPTION);
+            if (option == JOptionPane.YES_OPTION) {
+                changeSizeButton.doClick();
+            }
+            else{
+                homeButton.doClick();
+            }
+        }
+        else {
+            JOptionPane.showMessageDialog(gui, "Error al mover: " + message, "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     private void prepareBoardElementsAndFillTheBoard() {
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         int screenHeight = screenSize.height/2;
         int boardSize = Integer.parseInt(sizeTextField.getText().trim());
         boardPanel = new JPanel();
@@ -337,54 +422,51 @@ public class SquareGUI extends JFrame {
         boardPanel.setPreferredSize(new Dimension(screenHeight, screenHeight));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(0, 0, 0, 0);
-        HashMap<String, int[]> holesNotAsign = new HashMap<>();
-        HashMap<String, int[]> piecesNotAsign = new HashMap<>();
+        HashMap<String, Integer[]> holesNotAsign = new HashMap<>();
+        HashMap<String, Integer[]> piecesNotAsign = new HashMap<>();
         for (int i = 0; i < boardSize; i++) {
             for (int j = 0; j < boardSize; j++) {
                 JPanel squareOnBoard = new JPanel();
                 squareOnBoard.setBackground(Color.WHITE);
-                int tamaño = boardSize > 4 ? screenHeight/(int)((float)(boardSize*1.2)) : screenHeight/(int)((float)(boardSize*1.4));
-                squareOnBoard.setPreferredSize( new Dimension(tamaño, tamaño));
-                squareOnBoard.setMinimumSize( new Dimension(tamaño, tamaño));
-                squareOnBoard.setMaximumSize( new Dimension(tamaño, tamaño));
+                int tamanno = boardSize > 4 ? screenHeight/(int)((float)(boardSize*1.2)) : screenHeight/(int)((float)(boardSize*1.4));
+                squareOnBoard.setPreferredSize( new Dimension(tamanno, tamanno));
+                squareOnBoard.setMinimumSize( new Dimension(tamanno, tamanno));
+                squareOnBoard.setMaximumSize( new Dimension(tamanno, tamanno));
                 squareOnBoard.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
                 if (square.getSquareInformation(i, j) != null) {
                     String[] squareInformation = square.getSquareInformation(i, j).split(" ");
-                    if (squareInformation[0].equals("hueco")) {
-                        if (piecesNotAsign.containsKey(squareInformation[1])) {
-                            int[] indexPiece = piecesNotAsign.get(squareInformation[1]);
-                            addAndPaintPiece((JPanel) boardPanel.getComponent(boardSize * indexPiece[0] + indexPiece[1]), indexPiece[0], indexPiece[1], squareInformation[1], i, j, tamaño);
-                            piecesNotAsign.remove(squareInformation[1]);
+                    switch (squareInformation[0]) {
+                        case "hueco" -> {
+                            if (piecesNotAsign.containsKey(squareInformation[1])) {
+                                Integer[] indexPiece = piecesNotAsign.get(squareInformation[1]);
+                                boolean hasDiferentBackGround = squareInformation.length >= 3;
+                                addAndPaintPiece((JPanel) boardPanel.getComponent(boardSize * indexPiece[0] + indexPiece[1]), indexPiece[0], indexPiece[1], squareInformation[1], i, j, hasDiferentBackGround ? Integer.toString(indexPiece[3]) : "", tamanno, hasDiferentBackGround);
+                                piecesNotAsign.remove(squareInformation[1]);
+                            } else {
+                                holesNotAsign.put(squareInformation[1], new Integer[]{i, j});
+                            }
+                            addAndPaintHole(squareOnBoard, i, j, squareInformation[1], tamanno);
                         }
-                        else {
-                            holesNotAsign.put(squareInformation[1], new int[]{i, j});
+                        case "ficha" -> {
+                            if (holesNotAsign.containsKey(squareInformation[1])) {
+                                Integer[] indexHole = holesNotAsign.get(squareInformation[1]);
+                                addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], indexHole[0], indexHole[1], "", tamanno, false);
+                                holesNotAsign.remove(squareInformation[1]);
+                            } else {
+                                piecesNotAsign.put(squareInformation[1], new Integer[]{i, j});
+                            }
                         }
-                        addAndPaintHole(squareOnBoard, i, j, squareInformation[1], tamaño);
-                    }
-                    else if(squareInformation[0].equals("ficha")){
-                        if (holesNotAsign.containsKey(squareInformation[1])) {
-                            int[] indexHole = holesNotAsign.get(squareInformation[1]);
-                            addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], indexHole[0], indexHole[1], tamaño);
-                            holesNotAsign.remove(squareInformation[1]);
+                        case "huecoRelleno" ->
+                                addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], i, j, squareInformation[1], tamanno, true);
+                        case "huecoRellenoFicha" -> {
+                            if (holesNotAsign.containsKey(squareInformation[2])) {
+                                Integer[] indexHole = holesNotAsign.get(squareInformation[2]);
+                                addAndPaintPiece(squareOnBoard, i, j, squareInformation[2], indexHole[0], indexHole[1], squareInformation[1], tamanno, true);
+                                holesNotAsign.remove(squareInformation[2]);
+                            } else {
+                                piecesNotAsign.put(squareInformation[2], new Integer[]{i, j, Integer.parseInt(squareInformation[1])});
+                            }
                         }
-                        else {
-                            piecesNotAsign.put(squareInformation[1], new int[]{i, j});
-                        }
-                    }
-                    else if (squareInformation[0].equals("huecoRelleno")){
-                        addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], i, j, tamaño);
-                        addAndPaintHole(squareOnBoard, i, j, squareInformation[1], tamaño);
-                    }
-                    else if (squareInformation[0].equals("huecoRellenoFicha")){
-                        addAndPaintPiece(squareOnBoard, i, j, squareInformation[2], i, j, tamaño);
-                        addAndPaintHole(squareOnBoard, i, j, squareInformation[1], tamaño);
-                        if (holesNotAsign.containsKey(squareInformation[2])){
-                            int[] indexHole = holesNotAsign.get(squareInformation[2]);
-                            addAndPaintPiece(squareOnBoard, i, j, squareInformation[1], indexHole[0], indexHole[1], tamaño);
-                            addAndPaintHole((JPanel) boardPanel.getComponent(boardSize * indexHole[0] + indexHole[1]), indexHole[0], indexHole[1], squareInformation[2], tamaño);
-                            holesNotAsign.remove(squareInformation[2]);
-                        }
-                        piecesNotAsign.put(squareInformation[2], new int[]{i, j});
                     }
                 }
                 else{
@@ -393,15 +475,14 @@ public class SquareGUI extends JFrame {
                 gbc.gridx = j;
                 gbc.gridy = i;
                 boardPanel.add(squareOnBoard, gbc);
-                System.out.println("fichas: " + (piecesNotAsign.keySet()));
-                System.out.println("huecos: " + (holesNotAsign.keySet()));
-                System.out.println();
+                //System.out.println("fichas: " + (piecesNotAsign.keySet()));
+                //System.out.println("huecos: " + (holesNotAsign.keySet()));
+                //System.out.println();
             }
         }
-
     }
 
-    private void addAndPaintPiece(JPanel place, int buttonRow, int buttonCol, String color, int holeRow, int holeCol, int tam) {
+    private void addAndPaintPiece(JPanel place, int buttonRow, int buttonCol, String color, int holeRow, int holeCol, String backGroundColor, int tam, boolean backGroundDifferent) {
         ChangeColorButton piece = new ChangeColorButton("", buttonRow, buttonCol, color, holeRow, holeCol);
         place.setLayout(new GridBagLayout());
         piece.setBackground(new Color(Integer.parseInt(color)));
@@ -412,12 +493,13 @@ public class SquareGUI extends JFrame {
         gbc.gridy = buttonRow;
         gbc.fill = GridBagConstraints.BOTH;
         gbc.anchor = GridBagConstraints.CENTER;
-        place.setBackground(Color.WHITE);
+        place.setBackground(backGroundDifferent ? new Color(Integer.parseInt(backGroundColor)): Color.WHITE);
         place.add(piece, gbc);
     }
 
     private void addAndPaintHole(JPanel place, int buttonRow, int buttonCol,  String color, int tam){
         JButton hole = new JButton();
+        hole.setEnabled(false);
         place.setLayout(new GridBagLayout());
         place.setBackground(new Color(Integer.parseInt(color)));
         int buttonSize = (int)(float)(tam * 0.5);
@@ -441,14 +523,12 @@ public class SquareGUI extends JFrame {
 
     private Square getSquare(){return square;}
 
-    private void actualizeGamePanel(){
+    public void refresh(){
+        gamePanel.remove(boardPanel);
+        prepareBoardElementsAndFillTheBoard();
+        gamePanel.add(boardPanel);
         gamePanel.revalidate();
         gamePanel.repaint();
-    }
-
-    private void actualizeBoardPanel(){
-        boardPanel.revalidate();
-        boardPanel.repaint();
     }
 
     public static void main(String args[]){
@@ -456,13 +536,17 @@ public class SquareGUI extends JFrame {
         gui.setVisible(true);
     }
 
+
+
+
+
     public class ChangeColorButton extends JButton {
-        private Square square1 = getSquare();
+        private final Square square1 = getSquare();
         private String color;
         private  int row;
         private  int column;
-        private  int holeRow;
-        private  int holeCol;
+        private final int holeRow;
+        private final int holeCol;
 
         public ChangeColorButton(String text, int row, int column, String color, int holeRow, int holeCol) {
             super(text);
@@ -474,15 +558,9 @@ public class SquareGUI extends JFrame {
             addActionListener(new DefaultActionListener());
         }
 
-        public int getRow(){return row;}
-        public int getColumn(){return column;}
-        public String getColor(){return color;}
         public int getNumberComponentHole(){
-                int indexComponentHole = square1.getSize()* holeRow + holeCol;
-                return indexComponentHole;}
+                return square1.getSize()* holeRow + holeCol;}
 
-        public void setRow(int newRow){row = newRow;}
-        public void setColumn(int newColumn){column = newColumn;}
         public void setColor(String newColor){color = newColor;}
 
 
